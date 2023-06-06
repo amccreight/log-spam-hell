@@ -153,11 +153,6 @@ def download_log(job, dest, repo, revision, warning_re):
         # TODO(ER): We could cleanup log name handling.
         job_log_url = job['url']
 
-        # For some jobs errorssummary.log is now the default, but that doesn't
-        # include gecko warnings. Switch over to the raw log.
-        if 'errorsummary.log' in job_log_url:
-            job_log_url = re.sub('errorsummary', 'raw', job_log_url)
-
         print("job_log_url = %s" % job_log_url)
 
     except:
@@ -175,12 +170,19 @@ def download_log(job, dest, repo, revision, warning_re):
 def add_log_urls_to_jobs(jobs, job_urls):
     """
     Helper that maps the results of a job_log_url query to the actual job
-    objects. It's possilbe for a job to have multiple logs, for now we
+    objects. It's possible for a job to have multiple logs, for now we
     just choose the first one.
     """
     id_to_log = {}
     for job_log in job_urls:
         job_id = job_log['job_id']
+
+        # The error summary does not have what we want.
+        if job_log['name'] == 'errorsummary_json':
+            continue
+
+        # Hopefully the name is "live_backing_log" now, but don't assert or
+        # anything useful like that.
 
         # Only take the first log found for each job.
         # Another option is to check the log name. For taskcluster builds at
