@@ -217,7 +217,7 @@ def get_latest_revision(repo):
     return
 
 
-def retrieve_test_logs(repo, revision, platform='linux64',
+def retrieve_test_logs(repo, revision, platform='linux1804-64',
                        cache_dir=None, use_cache=True,
                        warning_re=WARNING_RE):
     """
