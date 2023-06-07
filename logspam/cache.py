@@ -141,7 +141,7 @@ def cache_file_path(cache_dir, warning_re):
     Generates the cache file name.
     """
     if warning_re != WARNING_RE:
-        warning_md5 = hashlib.md5(warning_re).hexdigest()
+        warning_md5 = hashlib.md5(warning_re.encode('utf-8')).hexdigest()
         return os.path.join(cache_dir, "results.%s.json" % warning_md5)
     else:
         return os.path.join(cache_dir, "results.json")
