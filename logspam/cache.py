@@ -23,7 +23,7 @@ def normalize_line(line):
       - trims file paths
       - stuff that looks like a pointer address
     """
-    line = line.decode('utf-8')
+    line = line.decode('latin-1')
     try:
         # Raw logs are now encoded in json
         json_line = json.loads(line)
