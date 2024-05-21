@@ -15,14 +15,7 @@ from logspam import WARNING_RE
 class CacheFileNotFoundException(Exception):
     pass
 
-def normalize_line(line):
-    """
-    Normalizes the given line to make comparisons easier. Removes:
-      - timestamps
-      - pids
-      - trims file paths
-      - stuff that looks like a pointer address
-    """
+def decode_line(line):
     line = line.decode('latin-1')
     try:
         # Raw logs are now encoded in json
@@ -33,6 +26,16 @@ def normalize_line(line):
         # specified.
         pass
 
+    return line
+
+def normalize_line(line):
+    """
+    Normalizes the given line to make comparisons easier. Removes:
+      - timestamps
+      - pids
+      - trims file paths
+      - stuff that looks like a pointer address
+    """
     # taskcluster prefixing:
     #   [task 2016-09-20T11:09:35.539828Z] 11:09:35
     line = re.sub(r'^\[task[^\]]+\]\s', '', line)
@@ -87,7 +90,8 @@ class ParsedLog:
         with open(dest, 'w') as f:
             for x in r.iter_lines():
                 if x:
-                    line = normalize_line(x)
+                    line = decode_line(x)
+                    line = normalize_line(line)
                     self.add_warning(line, warning_re)
                     f.write(line + '\n')
 
