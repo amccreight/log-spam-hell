@@ -136,7 +136,7 @@ class WarningInfo:
 
         return (summary, "\n".join(details), self.file)
 
-def download_log(job, dest, repo, revision, warning_re):
+def download_log(job, dest, repo, revision, warning_re, normalize):
     """
     Downloads the log file for the given job.
 
@@ -159,7 +159,8 @@ def download_log(job, dest, repo, revision, warning_re):
         print("Couldn't determine job log URL for %s" % job_name)
         return None
 
-    parsed_log = logspam.cache.ParsedLog(url=job_log_url, job_name=job_name)
+    parsed_log = logspam.cache.ParsedLog(url=job_log_url, job_name=job_name,
+                                         normalize=normalize)
     if not parsed_log.download(dest, warning_re):
         print("Couldn't download log URL for %s" % job_name)
         return None
@@ -221,7 +222,8 @@ def get_latest_revision(repo):
 
 def retrieve_test_logs(repo, revision, platform='linux1804-64',
                        cache_dir=None, use_cache=True,
-                       warning_re=WARNING_RE):
+                       warning_re=WARNING_RE,
+                       normalize=True):
     """
     Retrieves and processes the test logs for the given revision.
 
@@ -230,7 +232,7 @@ def retrieve_test_logs(repo, revision, platform='linux1804-64',
     if not cache_dir:
         cache_dir = "%s-%s-%s" % (repo, revision, platform)
 
-    cache = logspam.cache.Cache(cache_dir, warning_re)
+    cache = logspam.cache.Cache(cache_dir, warning_re, normalize)
 
     cache_dir_exists = os.path.isdir(cache_dir)
     if cache_dir_exists and use_cache:
@@ -310,7 +312,8 @@ def retrieve_test_logs(repo, revision, platform='linux1804-64',
     # Bind fixed arguments to the |download_log| call.
     partial_download_log = partial(download_log, dest=cache_dir,
                                   repo=repo, revision=revision,
-                                  warning_re=warning_re)
+                                  warning_re=warning_re,
+                                  normalize=normalize)
 
     pool = Pool(processes=24)
     files = pool.map(partial_download_log, jobs)

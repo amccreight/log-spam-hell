@@ -75,9 +75,10 @@ class ParsedLog:
     """
     Represents a log file that was downloaded and processed.
     """
-    def __init__(self, url, job_name, file_name=None):
+    def __init__(self, url, job_name, normalize, file_name=None):
         self.url = url
         self.job_name = job_name
+        self.normalize = normalize
         if not file_name:
             self.fname = os.path.basename(job_name.replace(' ', '_') + '.log')
         else:
@@ -91,7 +92,8 @@ class ParsedLog:
             for x in r.iter_lines():
                 if x:
                     line = decode_line(x)
-                    line = normalize_line(line)
+                    if self.normalize:
+                        line = normalize_line(line)
                     self.add_warning(line, warning_re)
                     f.write(line + '\n')
 
@@ -152,8 +154,9 @@ def cache_file_path(cache_dir, warning_re):
 
 
 class Cache(object):
-    def __init__(self, cache_dir, warning_re):
+    def __init__(self, cache_dir, warning_re, normalize):
         self.path = cache_file_path(cache_dir, warning_re)
+        self.normalize = normalize
 
     def store_results(self, parsed_logs):
         """
@@ -184,7 +187,8 @@ class Cache(object):
             for x in raw_list:
                 if not x:
                     continue
-                log = ParsedLog(x['url'], x['job_name'], x['fname'])
+                log = ParsedLog(x['url'], x['job_name'], self.normalize,
+                                x['fname'])
                 log.warnings.update(x['warnings'])
                 parsed_logs.append(log)
 
