@@ -82,7 +82,7 @@ class WarningInfo:
                         pass
 
                     # Check if this is the beginning of a new test.
-                    m = re.search('TEST-START \| (.*)', line)
+                    m = re.search(r'TEST-START \| (.*)', line)
                     if m:
                         curr_test = e10s_prefix + m.group(1)
 
