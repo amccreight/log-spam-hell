@@ -1,34 +1,42 @@
 # log-spam-hell
+
 Tools for identifying sources of log spam in mozilla build logs
 
 ## Setup
+
 ```
-pip install git+https:///github.com/EricRahm/log-spam-hell.git
+pip install git+https:///github.com/amccreight/log-spam-hell.git
 ```
 
+Disclaimer: I have not tested this.
+
 ## Basic usage:
+
 To just get a report for the latest changeset that has a reasonable number of test results:
 `log_spam report latest`
 
 ## High level usage:
+
 - Go to treeherder: https://treeherder.mozilla.org/#/jobs?repo=mozilla-central
-- Choose a *debug* build for the day that's completed, and all tests for the given platform you care about have completed
+- Choose a _debug_ build for the day that's completed, and all tests for the given platform you care about have completed
 - Copy the revision hash
 - Run:
-`log_spam report fc15477ce628`
+  `log_spam report fc15477ce628`
 - Choose a warning to get more details on:
-`log_spam report fc15477ce628 'WARNING: Found channel with no loadinfo, assuming third-party request: file dom/base/ThirdPartyUtil.cpp, line 235'`
+  `log_spam report fc15477ce628 'WARNING: Found channel with no loadinfo, assuming third-party request: file dom/base/ThirdPartyUtil.cpp, line 235'`
 
 By default `mozilla-central` is used and the platform is `linux1804-64`.
 
 Other repos such as `autoland` or `try` can be substituted using the `--repo` param. Other platforms such as `windows10-64` can be specified as well using the `--platform` param.
 
 ## Bisection
+
 To bisect a warning you can use the `bisect` sub-command. It's possible this will just bisect to a change that move the line the warning was on. To deal with that you can use `--ignore-lines`, but only use this if the warning is particularly unique.
 
-*Note: Bisection is pretty flaky and might give you false positives. Double-check the pushlog URL it spits out to see if it's possible there are multiple bugs in the bisected range.*
+_Note: Bisection is pretty flaky and might give you false positives. Double-check the pushlog URL it spits out to see if it's possible there are multiple bugs in the bisected range._
 
 Example:
+
 ```
 # Format is: log_spam bisect [--ignore-lines] <known_good_date> <known_bad_date> <WARNING>
 log_spam bisect --ignore-lines 2016-09-01 2016-09-21 \
@@ -40,6 +48,7 @@ log_spam bisect --ignore-lines 2016-09-01 2016-09-21 \
 There is basic support for filing a bug containing the output of running `log_spam report <hash> <WARNING>` and set as blocking the `logspam` meta bug. By default the bugzilla api key found in your `.hgrc` is used. This can be overridden with `--api-key`.
 
 Example:
+
 ```
 # Format is: log_spam file --component <bug_component> [--prodcut <bug_product>] <hash> <WARNING>
 log_spam --create-bug --component DOM fc15477ce628 \
@@ -51,7 +60,9 @@ log_spam --hgroot ~/mozilla-unified fc15477ce628 \
 ```
 
 ## Full help:
+
 ### Top-level
+
 ```
 usage: log_spam [-h] {report,file,bisect} ...
 
@@ -66,7 +77,9 @@ subcommands:
     file                Files a logspam bug in bugzilla for the given warning.
     bisect              Attempts to find the changeset that introduced a given warning through bisection.
 ```
+
 ### Report
+
 ```
 usage: log_spam report [-h] [--platform PLATFORM] [--warning-re WARNING_RE] [--repo REPO] [--no-cache]
                        [--cache-dir CACHE_DIR] [--warning-count WARNING_COUNT]
@@ -92,7 +105,9 @@ optional arguments:
                         Number of tests to list in warning summary mode. Default: 10
   --reverse             Print the least common warnings instead.
 ```
+
 ### File
+
 ```
 usage: log_spam file [-h] [--platform PLATFORM] [--warning-re WARNING_RE] [--repo REPO] [--no-cache]
                      [--cache-dir CACHE_DIR] [--warning-count WARNING_COUNT]
@@ -125,7 +140,9 @@ optional arguments:
   --product PRODUCT     Product to file the bug in. Default: Core
   --api-key API_KEY     The API key to use when creating the bug. Default: extracted from .hgrc
 ```
+
 ### Bisect
+
 ```
 usage: log_spam bisect [-h] [--platform PLATFORM] [--warning-re WARNING_RE] [--ignore-lines]
                        [--warning-limit WARNING_LIMIT] [--required-test REQUIRED_TEST]
@@ -151,19 +168,21 @@ optional arguments:
 ## Developers
 
 ### Configuration
+
 I highly suggest working in a virtualenv, manage that however you prefer. We now use Python3.
 
-
 To setup for development:
+
 ```
-git clone https://github.com/EricRahm/log-spam-hell.git
+git clone https://github.com/amccreight/log-spam-hell.git
 cd log-spam-hell
 virtualenv venv
 source venv/bin/activate
 pip3 install -e .
 ```
-### Common issues
-- *Normalizing paths* The paths in warnings are actually absolute paths. We normalize them so they're relative to a normal source checkout. This often breaks when releng changes build machine configurations so you'll have to update the [normalize_line function](logspam/cache.py).
-- *Platform names* We occosionally change the name of a platform, if you see very few results go over to treeherder, select the test you're interested in, and check out what the platform name is in the job description.
-- *Log format* The default log that gets returned and the format it is in can change as well. You can look at the log artifact in treeherder to get an idea of what's changed.
 
+### Common issues
+
+- _Normalizing paths_ The paths in warnings are actually absolute paths. We normalize them so they're relative to a normal source checkout. This often breaks when releng changes build machine configurations so you'll have to update the [normalize_line function](logspam/cache.py).
+- _Platform names_ We occosionally change the name of a platform, if you see very few results go over to treeherder, select the test you're interested in, and check out what the platform name is in the job description.
+- _Log format_ The default log that gets returned and the format it is in can change as well. You can look at the log artifact in treeherder to get an idea of what's changed.
