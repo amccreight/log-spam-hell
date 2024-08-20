@@ -19,6 +19,8 @@ def add_arguments(p):
     Adds command-line arguments to the given argparser.
     """
     subparsers = p.add_subparsers(
+            required=True,
+            dest='cmd',
             title='subcommands',
             description='Commands supported by the logspam tool')
 
