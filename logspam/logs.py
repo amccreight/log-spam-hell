@@ -38,7 +38,8 @@ class WarningInfo:
         self.count = warning_count
 
         # Extract the warning text, file name, and line number.
-        m = re.match(r'.*WARNING: (.*)[:,] file ([^,]+), line ([0-9]+).*', warning_text)
+        m = re.match(r'.*WARNING: (.*)[:,] file ([^:]+):([0-9]+).*', warning_text)
+
         if m:
             (self.text, self.file, self.line) = m.group(1, 2, 3)
         else:
