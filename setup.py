@@ -21,7 +21,7 @@ setup(
     packages=["logspam"],
     install_requires=[
       "mozregression>=4.0,<4.1",
-      "requests>=2.24,<2.25",
+      "requests>=2.32.3,<2.33",
       "treeherder-client>=5.0,<5.1",
     ],
     entry_points={
