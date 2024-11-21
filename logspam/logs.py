@@ -29,6 +29,14 @@ BRANCH_MAP = {
 # Magic number for retrieving debug build info from Treeherder
 DEBUG_OPTIONHASH = '32faaecac742100f7753f0c1d0aa0add01b4046b'
 
+# Magic number for retrieving opt build info from Treeherder
+OPT_OPTIONHASH = '102210fe594ee9b33d82058545b1ed14f4c8206e'
+
+# These values can be calculated by calling
+# find_option_collection_hash(client, "debug")
+# or find_option_collection_hash(client, "opt")
+# in retrieve_test_logs.
+
 class WarningInfo:
     """
     Provides details for a warning.
@@ -220,11 +228,21 @@ def get_latest_revision(repo):
 
     return
 
+def find_option_collection_hash(client, option_name):
+    och = client.get_option_collection_hash()
+    for k, v in och.items():
+        if v[0]['name'] == option_name:
+            print(f"Found option collection hash for {option_name}: {k}")
+            print()
+            return
+    print(f"Didn't find option collection hash for {option_name}")
+    print()
 
 def retrieve_test_logs(repo, revision, platform='linux1804-64',
                        cache_dir=None, use_cache=True,
                        warning_re=WARNING_RE,
-                       normalize=True):
+                       normalize=True,
+                       is_debug=True):
     """
     Retrieves and processes the test logs for the given revision.
 
@@ -255,17 +273,23 @@ def retrieve_test_logs(repo, revision, platform='linux1804-64',
         return None
 
     print("getting jobs")
+
+    if is_debug:
+        option_hash = DEBUG_OPTIONHASH
+    else:
+        option_hash = OPT_OPTIONHASH
+
     for x in range(5):
         try:
             # option_collection_hash is just the convoluted way of specifying
-            # we want a debug build.
+            # whether we want a debug or opt build.
             print("jobs = client.get_jobs('%s',result_set_id=%d, count=5000, platform='%s', option_collection_hash='%s')" % (
-                    repo, pushes[0]['id'], platform, DEBUG_OPTIONHASH))
+                    repo, pushes[0]['id'], platform, option_hash))
             jobs = client.get_jobs(repo,
                                    result_set_id=pushes[0]['id'],
                                    count=5000, # Just make this really large to avoid pagination
                                    platform=platform,
-                                   option_collection_hash=DEBUG_OPTIONHASH,
+                                   option_collection_hash=option_hash,
                                    state='completed')
             break
         except requests.exceptions.ConnectionError:

@@ -15,7 +15,8 @@ class WarningNotFoundException(Exception):
 
 class Warnings(object):
     def __init__(self, repo, revision, platform,
-                 cache_dir, use_cache, warning_re, normalize):
+                 cache_dir, use_cache, warning_re, normalize=True,
+                 is_debug=True):
 
         if revision == "latest":
             revision = get_latest_revision(repo)
@@ -31,7 +32,7 @@ class Warnings(object):
 
         files = retrieve_test_logs(repo, revision, platform,
                                    cache_dir, use_cache, warning_re,
-                                   normalize)
+                                   normalize, is_debug)
         self.logs = [f for f in files if f]
 
         self.combined_warnings = Counter()
@@ -77,7 +78,9 @@ class ReportCommandLineArgs(BaseCommandLineArgs):
     def do_report(cmdline):
         warnings = Warnings(cmdline.repo, cmdline.revision, cmdline.platform,
                             cmdline.cache_dir, cmdline.use_cache,
-                            cmdline.warning_re, not cmdline.no_normalize)
+                            cmdline.warning_re,
+                            normalize=not cmdline.no_normalize,
+                            is_debug=not cmdline.opt)
 
         if not cmdline.warning:
             warnings.top(cmdline.warning_count, cmdline.reverse)
@@ -117,3 +120,5 @@ class ReportCommandLineArgs(BaseCommandLineArgs):
                        help='Print the least common warnings instead.')
         p.add_argument('--no-normalize', action='store_true', default=False,
                        help='Skip normalizing and save the actual log text.')
+        p.add_argument('--opt', action='store_true', default=False,
+                       help='Get opt build reports instead of debug. Not useful for warnings.')
