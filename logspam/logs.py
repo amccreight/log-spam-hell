@@ -131,7 +131,7 @@ class WarningInfo:
         details = []
         details.append("## %d %s" % (self.count, self.full_text))
         details.append("")
-        details.append("This warning [[1]](%s) shows up in the following test suites:" % link)
+        details.append("[This warning](%s) shows up in the following test suites:" % link)
         details.append("```")
         for (job, count) in self.jobs.most_common():
             details.append("%6d - %s" % (count, job))
@@ -141,7 +141,6 @@ class WarningInfo:
         for (test, count) in self.tests.most_common(test_count):
             details.append("%6d - %s" % (count, test))
         details.append("```")
-        details.append("[1] %s" % link)
 
         return (summary, "\n".join(details), self.file)
 
